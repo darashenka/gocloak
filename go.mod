@@ -1,6 +1,7 @@
 module github.com/Nerzal/gocloak/v13
 
 go 1.23
+toolchain go1.24.1
 
 require (
 	github.com/go-resty/resty/v2 v2.15.3
@@ -9,7 +10,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/segmentio/ksuid v1.0.4
 	github.com/stretchr/testify v1.9.0
-	golang.org/x/crypto v0.28.0
+	golang.org/x/crypto v0.35.0
 	golang.org/x/mod v0.21.0
 )
 
