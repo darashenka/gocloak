@@ -1,3 +1,4 @@
+version: "2"
 linters:
   enable:
     - goimports
@@ -14,7 +15,7 @@ linters-settings:
   misspell:
     locale: US
   goimports:
-    local-prefixes: github.com/Nerzal/gocloak
+    local-prefixes: github.com/andrewaldasoro/gocloak
   gocognit:
     min-complexity: 15
   gocyclo:

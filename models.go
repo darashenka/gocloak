@@ -215,6 +215,7 @@ type User struct {
 	ClientRoles                *map[string][]string        `json:"clientRoles,omitempty"`
 	RealmRoles                 *[]string                   `json:"realmRoles,omitempty"`
 	Groups                     *[]string                   `json:"groups,omitempty"`
+	Organizations              *[]string                   `json:"organizations,omitempty"`
 	ServiceAccountClientID     *string                     `json:"serviceAccountClientId,omitempty"`
 	Credentials                *[]CredentialRepresentation `json:"credentials,omitempty"`
 }
