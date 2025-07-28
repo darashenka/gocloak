@@ -5442,10 +5442,8 @@ func Test_CreateListGetUpdateDeletePolicy(t *testing.T) {
 			Description: createdPolicy.Description,
 			Type:        createdPolicy.Type,
 			Logic:       createdPolicy.Logic,
-			ClientPolicyRepresentation: gocloak.ClientPolicyRepresentation{
-				Clients: &[]string{
-					gocloakClientID,
-				},
+			Config: &map[string]string{
+				"clients": fmt.Sprintf(`["%s"]`, gocloakClientID),
 			},
 		},
 	)
@@ -5947,24 +5945,26 @@ func Test_TimePolicy(t *testing.T) {
 	client := NewClientWithDebug(t)
 
 	// Create
+	config := map[string]string{
+		"notBefore":    "2019-12-30 12:00:00",
+		"notOnOrAfter": "2020-12-30 12:00:00",
+		"dayMonth":     "1",
+		"dayMonthEnd":  "31",
+		"month":        "1",
+		"monthEnd":     "12",
+		"year":         "1900",
+		"yearEnd":      "2100",
+		"hour":         "1",
+		"hourEnd":      "24",
+		"minute":       "0",
+		"minuteEnd":    "60",
+	}
+
 	tearDown, _ := CreatePolicy(t, client, gocloakClientID, gocloak.PolicyRepresentation{
 		Name:        GetRandomNameP("PolicyName"),
 		Description: gocloak.StringP("Time Policy"),
 		Type:        gocloak.StringP("time"),
-		TimePolicyRepresentation: gocloak.TimePolicyRepresentation{
-			NotBefore:    gocloak.StringP("2019-12-30 12:00:00"),
-			NotOnOrAfter: gocloak.StringP("2020-12-30 12:00:00"),
-			DayMonth:     gocloak.StringP("1"),
-			DayMonthEnd:  gocloak.StringP("31"),
-			Month:        gocloak.StringP("1"),
-			MonthEnd:     gocloak.StringP("12"),
-			Year:         gocloak.StringP("1900"),
-			YearEnd:      gocloak.StringP("2100"),
-			Hour:         gocloak.StringP("1"),
-			HourEnd:      gocloak.StringP("24"),
-			Minute:       gocloak.StringP("0"),
-			MinuteEnd:    gocloak.StringP("60"),
-		},
+		Config:      &config,
 	})
 	// Delete
 	defer tearDown()
@@ -5982,10 +5982,8 @@ func Test_UserPolicy(t *testing.T) {
 		Name:        GetRandomNameP("PolicyName"),
 		Description: gocloak.StringP("User Policy"),
 		Type:        gocloak.StringP("user"),
-		UserPolicyRepresentation: gocloak.UserPolicyRepresentation{
-			Users: &[]string{
-				userID,
-			},
+		Config: &map[string]string{
+			"users": fmt.Sprintf(`["%s"]`, userID),
 		},
 	})
 	// Delete

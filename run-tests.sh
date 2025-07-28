@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/bin/bash
 
-docker compose down
+#docker compose down
 docker compose up -d
 
 keycloakServer=http://localhost
@@ -23,4 +23,4 @@ fi
 
 go test -failfast -race -cover -coverprofile=coverage.out -covermode=atomic -p 10 -cpu 1,2 -bench . -benchmem ${ARGS[@]}
 
-docker compose down
+#docker compose down
