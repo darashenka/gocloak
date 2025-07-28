@@ -326,14 +326,15 @@ type SendVerificationMailParams struct {
 
 // Group is a Group
 type Group struct {
-	ID          *string              `json:"id,omitempty"`
-	Name        *string              `json:"name,omitempty"`
-	Path        *string              `json:"path,omitempty"`
-	SubGroups   *[]Group             `json:"subGroups,omitempty"`
-	Attributes  *map[string][]string `json:"attributes,omitempty"`
-	Access      *map[string]bool     `json:"access,omitempty"`
-	ClientRoles *map[string][]string `json:"clientRoles,omitempty"`
-	RealmRoles  *[]string            `json:"realmRoles,omitempty"`
+	ID            *string              `json:"id,omitempty"`
+	Name          *string              `json:"name,omitempty"`
+	Path          *string              `json:"path,omitempty"`
+	SubGroups     *[]Group             `json:"subGroups,omitempty"`
+	SubGroupCount *int                 `json:"subGroupCount,omitempty"`
+	Attributes    *map[string][]string `json:"attributes,omitempty"`
+	Access        *map[string]bool     `json:"access,omitempty"`
+	ClientRoles   *map[string][]string `json:"clientRoles,omitempty"`
+	RealmRoles    *[]string            `json:"realmRoles,omitempty"`
 }
 
 // GroupsCount represents the groups count response from keycloak

@@ -1237,14 +1237,14 @@ func Test_GroupPermissions(t *testing.T) {
 	realManagementClient := clients[0]
 
 	_, policyID := CreatePolicy(t, client, gocloakClientID, gocloak.PolicyRepresentation{
-		Name:        GetRandomNameP("PolicyName"),
-		Description: gocloak.StringP("Policy Description"),
-		Type:        gocloak.StringP("client"),
-		Logic:       gocloak.POSITIVE,
+		Name:                       GetRandomNameP("PolicyName"),
+		Description:                gocloak.StringP("Policy Description"),
+		Type:                       gocloak.StringP("client"),
+		Logic:                      gocloak.POSITIVE,
 		ClientPolicyRepresentation: gocloak.ClientPolicyRepresentation{
-			Clients: &[]string{
-				gocloakClientID,
-			},
+			//Clients: &[]string{
+			//	gocloakClientID,
+			//},
 		},
 	})
 

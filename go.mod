@@ -19,3 +19,5 @@ require (
 	golang.org/x/net v0.37.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/Nerzal/gocloak/v13 => github.com/darashenka/gocloak/v13 v13.9.1-0.20250708174939-75e7d64bd7ac
