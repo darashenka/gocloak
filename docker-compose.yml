@@ -16,7 +16,7 @@ services:
       timeout: 10s
       retries: 5
     volumes:
-      - ./testdata/gocloak-realm.json:/opt/keycloak/data/import/gocloak-realm.json
+      - ./testdata/gocloak-realm.json:/opt/keycloak/data/import/gocloak-realm.json:ro
     entrypoint: ["/opt/keycloak/bin/kc.sh", "start-dev", "--import-realm"]
 
   mailhog:

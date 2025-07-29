@@ -1,5 +1,6 @@
 FROM quay.io/keycloak/keycloak:26.2
 COPY testdata data/import
+COPY quarkus.properties /opt/keycloak/conf
 WORKDIR /opt/keycloak
 ENV KC_HOSTNAME=localhost
 ENV KEYCLOAK_USER=admin

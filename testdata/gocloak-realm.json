@@ -36,6 +36,7 @@
     "quickLoginCheckMilliSeconds": 1000,
     "maxDeltaTimeSeconds": 43200,
     "failureFactor": 30,
+    "organizationsEnabled": true,
     "defaultRoles": [
         "uma_authorization",
         "offline_access"

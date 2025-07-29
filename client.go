@@ -3634,6 +3634,9 @@ func (g *GoCloak) CreatePolicy(ctx context.Context, token, realm, idOfClient str
 		path = append(path, *policy.Type)
 	}
 
+	// Convert embedded policy-specific fields to Config format for Keycloak 26+ compatibility
+	policy.ToConfig()
+
 	var result PolicyRepresentation
 	resp, err := g.GetRequestWithBearerAuth(ctx, token).
 		SetResult(&result).
@@ -3668,6 +3671,9 @@ func (g *GoCloak) UpdatePolicy(ctx context.Context, token, realm, idOfClient str
 	}
 
 	path = append(path, *(policy.ID))
+
+	// Convert embedded policy-specific fields to Config format for Keycloak 26+ compatibility
+	policy.ToConfig()
 
 	resp, err := g.GetRequestWithBearerAuth(ctx, token).
 		SetBody(policy).
@@ -4581,7 +4587,7 @@ func (g *GoCloak) DeleteOrganization(ctx context.Context, token, realm, idOfOrga
 	const errMessage = "could not delete organization"
 
 	resp, err := g.GetRequestWithBearerAuth(ctx, token).
-		Delete(g.getAdminRealmURL(realm, "organization", idOfOrganization))
+		Delete(g.getAdminRealmURL(realm, "organizations", idOfOrganization))
 
 	return checkForError(resp, err, errMessage)
 }

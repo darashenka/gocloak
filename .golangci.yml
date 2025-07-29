@@ -1,38 +1,48 @@
+version: "2"
 linters:
   enable:
-    - goimports
-    - gofmt
-    - misspell
-    - gosec
-    - unconvert
-    - revive
     - gocognit
     - gocyclo
-  fast: true
-
-linters-settings:
-  misspell:
-    locale: US
-  goimports:
-    local-prefixes: github.com/Nerzal/gocloak
-  gocognit:
-    min-complexity: 15
-  gocyclo:
-    min-complexity: 15
-  gofmt:
-    simplify: true
-
-issues:
-  exclude-dirs:
-    - (^|/)testdata($|/)
-  exclude-dirs-use-default: false
-  exclude-use-default: false
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - gocyclo
-        - dupl
-        - gosec
-        - gocognit
-  exclude:
-    - should have a package comment
+    - gosec
+    - misspell
+    - revive
+    - unconvert
+  disable:
+    - errcheck
+    - govet
+    - staticcheck
+    - unused
+  settings:
+    gocognit:
+      min-complexity: 15
+    gocyclo:
+      min-complexity: 15
+    misspell:
+      locale: US
+  exclusions:
+    generated: lax
+    rules:
+      - linters:
+          - dupl
+          - gocognit
+          - gocyclo
+          - gosec
+        path: _test\.go
+      - path: (.+)\.go$
+        text: should have a package comment
+    paths:
+      - (^|/)testdata($|/)
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    gofmt:
+      simplify: true
+    goimports:
+      local-prefixes:
+        - github.com/Nerzal/gocloak
+  exclusions:
+    generated: lax
+    paths:
+      - (^|/)testdata($|/)

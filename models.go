@@ -3,6 +3,7 @@ package gocloak
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -217,6 +218,9 @@ type User struct {
 	Groups                     *[]string                   `json:"groups,omitempty"`
 	ServiceAccountClientID     *string                     `json:"serviceAccountClientId,omitempty"`
 	Credentials                *[]CredentialRepresentation `json:"credentials,omitempty"`
+	NotBefore                  *int64                      `json:"notBefore,omitempty"`
+	Origin                     *string                     `json:"origin,omitempty"`
+	Self                       *string                     `json:"self,omitempty"`
 }
 
 // SetPasswordRequest sets a new password
@@ -335,6 +339,7 @@ type Group struct {
 	Access        *map[string]bool     `json:"access,omitempty"`
 	ClientRoles   *map[string][]string `json:"clientRoles,omitempty"`
 	RealmRoles    *[]string            `json:"realmRoles,omitempty"`
+	ParentID      *string              `json:"parentId,omitempty"`
 }
 
 // GroupsCount represents the groups count response from keycloak
@@ -392,6 +397,7 @@ type Role struct {
 	ContainerID        *string                   `json:"containerId,omitempty"`
 	Description        *string                   `json:"description,omitempty"`
 	Attributes         *map[string][]string      `json:"attributes,omitempty"`
+	Access             *map[string]bool          `json:"access,omitempty"`
 }
 
 // GetRoleParams represents the optional parameters for getting roles
@@ -462,52 +468,71 @@ type ProtocolMappersConfig struct {
 	Single                             *string `json:"single,omitempty"`
 	Script                             *string `json:"script,omitempty"`
 	AddOrganizationAttributes          *string `json:"addOrganizationAttributes,omitempty"`
-	AddOrganizationId                  *string `json:"addOrganizationId,omitempty"`
+	AddOrganizationID                  *string `json:"addOrganizationId,omitempty"`
 }
 
 // Client is a ClientRepresentation
 type Client struct {
-	Access                             *map[string]interface{}         `json:"access,omitempty"`
-	AdminURL                           *string                         `json:"adminUrl,omitempty"`
-	Attributes                         *map[string]string              `json:"attributes,omitempty"`
-	AuthenticationFlowBindingOverrides *map[string]string              `json:"authenticationFlowBindingOverrides,omitempty"`
-	AuthorizationServicesEnabled       *bool                           `json:"authorizationServicesEnabled,omitempty"`
-	AuthorizationSettings              *ResourceServerRepresentation   `json:"authorizationSettings,omitempty"`
-	BaseURL                            *string                         `json:"baseUrl,omitempty"`
-	BearerOnly                         *bool                           `json:"bearerOnly,omitempty"`
-	ClientAuthenticatorType            *string                         `json:"clientAuthenticatorType,omitempty"`
-	ClientID                           *string                         `json:"clientId,omitempty"`
-	ClientTemplate                     *string                         `json:"clientTemplate,omitempty"`
-	ConsentRequired                    *bool                           `json:"consentRequired,omitempty"`
-	DefaultClientScopes                *[]string                       `json:"defaultClientScopes,omitempty"`
-	DefaultRoles                       *[]string                       `json:"defaultRoles,omitempty"`
-	Description                        *string                         `json:"description,omitempty"`
-	DirectAccessGrantsEnabled          *bool                           `json:"directAccessGrantsEnabled,omitempty"`
-	Enabled                            *bool                           `json:"enabled,omitempty"`
-	FrontChannelLogout                 *bool                           `json:"frontchannelLogout,omitempty"`
-	FullScopeAllowed                   *bool                           `json:"fullScopeAllowed,omitempty"`
-	ID                                 *string                         `json:"id,omitempty"`
-	ImplicitFlowEnabled                *bool                           `json:"implicitFlowEnabled,omitempty"`
-	Name                               *string                         `json:"name,omitempty"`
-	NodeReRegistrationTimeout          *int32                          `json:"nodeReRegistrationTimeout,omitempty"`
-	NotBefore                          *int32                          `json:"notBefore,omitempty"`
-	OptionalClientScopes               *[]string                       `json:"optionalClientScopes,omitempty"`
-	Origin                             *string                         `json:"origin,omitempty"`
-	Protocol                           *string                         `json:"protocol,omitempty"`
-	ProtocolMappers                    *[]ProtocolMapperRepresentation `json:"protocolMappers,omitempty"`
-	PublicClient                       *bool                           `json:"publicClient,omitempty"`
-	RedirectURIs                       *[]string                       `json:"redirectUris,omitempty"`
-	RegisteredNodes                    *map[string]int                 `json:"registeredNodes,omitempty"`
-	RegistrationAccessToken            *string                         `json:"registrationAccessToken,omitempty"`
-	RootURL                            *string                         `json:"rootUrl,omitempty"`
-	Secret                             *string                         `json:"secret,omitempty"`
-	ServiceAccountsEnabled             *bool                           `json:"serviceAccountsEnabled,omitempty"`
-	StandardFlowEnabled                *bool                           `json:"standardFlowEnabled,omitempty"`
-	SurrogateAuthRequired              *bool                           `json:"surrogateAuthRequired,omitempty"`
-	UseTemplateConfig                  *bool                           `json:"useTemplateConfig,omitempty"`
-	UseTemplateMappers                 *bool                           `json:"useTemplateMappers,omitempty"`
-	UseTemplateScope                   *bool                           `json:"useTemplateScope,omitempty"`
-	WebOrigins                         *[]string                       `json:"webOrigins,omitempty"`
+	Access                               *map[string]interface{}         `json:"access,omitempty"`
+	AdminURL                             *string                         `json:"adminUrl,omitempty"`
+	Attributes                           *map[string]string              `json:"attributes,omitempty"`
+	AuthenticationFlowBindingOverrides   *map[string]string              `json:"authenticationFlowBindingOverrides,omitempty"`
+	AuthorizationServicesEnabled         *bool                           `json:"authorizationServicesEnabled,omitempty"`
+	AuthorizationSettings                *ResourceServerRepresentation   `json:"authorizationSettings,omitempty"`
+	BaseURL                              *string                         `json:"baseUrl,omitempty"`
+	BearerOnly                           *bool                           `json:"bearerOnly,omitempty"`
+	ClientAuthenticatorType              *string                         `json:"clientAuthenticatorType,omitempty"`
+	ClientID                             *string                         `json:"clientId,omitempty"`
+	ClientTemplate                       *string                         `json:"clientTemplate,omitempty"`
+	ConsentRequired                      *bool                           `json:"consentRequired,omitempty"`
+	DefaultClientScopes                  *[]string                       `json:"defaultClientScopes,omitempty"`
+	DefaultRoles                         *[]string                       `json:"defaultRoles,omitempty"`
+	Description                          *string                         `json:"description,omitempty"`
+	DirectAccessGrantsEnabled            *bool                           `json:"directAccessGrantsEnabled,omitempty"`
+	Enabled                              *bool                           `json:"enabled,omitempty"`
+	FrontChannelLogout                   *bool                           `json:"frontchannelLogout,omitempty"`
+	FullScopeAllowed                     *bool                           `json:"fullScopeAllowed,omitempty"`
+	ID                                   *string                         `json:"id,omitempty"`
+	ImplicitFlowEnabled                  *bool                           `json:"implicitFlowEnabled,omitempty"`
+	Name                                 *string                         `json:"name,omitempty"`
+	NodeReRegistrationTimeout            *int32                          `json:"nodeReRegistrationTimeout,omitempty"`
+	NotBefore                            *int32                          `json:"notBefore,omitempty"`
+	OptionalClientScopes                 *[]string                       `json:"optionalClientScopes,omitempty"`
+	Origin                               *string                         `json:"origin,omitempty"`
+	Protocol                             *string                         `json:"protocol,omitempty"`
+	ProtocolMappers                      *[]ProtocolMapperRepresentation `json:"protocolMappers,omitempty"`
+	PublicClient                         *bool                           `json:"publicClient,omitempty"`
+	RedirectURIs                         *[]string                       `json:"redirectUris,omitempty"`
+	RegisteredNodes                      *map[string]int                 `json:"registeredNodes,omitempty"`
+	RegistrationAccessToken              *string                         `json:"registrationAccessToken,omitempty"`
+	RootURL                              *string                         `json:"rootUrl,omitempty"`
+	Secret                               *string                         `json:"secret,omitempty"`
+	ServiceAccountsEnabled               *bool                           `json:"serviceAccountsEnabled,omitempty"`
+	StandardFlowEnabled                  *bool                           `json:"standardFlowEnabled,omitempty"`
+	SurrogateAuthRequired                *bool                           `json:"surrogateAuthRequired,omitempty"`
+	UseTemplateConfig                    *bool                           `json:"useTemplateConfig,omitempty"`
+	UseTemplateMappers                   *bool                           `json:"useTemplateMappers,omitempty"`
+	UseTemplateScope                     *bool                           `json:"useTemplateScope,omitempty"`
+	WebOrigins                           *[]string                       `json:"webOrigins,omitempty"`
+	AlwaysDisplayInConsole               *bool                           `json:"alwaysDisplayInConsole,omitempty"`
+	BackchannelLogoutRevokeOfflineTokens *bool                           `json:"backchannelLogoutRevokeOfflineTokens,omitempty"`
+	BackchannelLogoutSessionRequired     *bool                           `json:"backchannelLogoutSessionRequired,omitempty"`
+	BackchannelLogoutURL                 *string                         `json:"backchannelLogoutUrl,omitempty"`
+	ClientSessionIdleTimeout             *int                            `json:"clientSessionIdleTimeout,omitempty"`
+	ClientSessionMaxLifespan             *int                            `json:"clientSessionMaxLifespan,omitempty"`
+	ClientOfflineSessionIdleTimeout      *int                            `json:"clientOfflineSessionIdleTimeout,omitempty"`
+	ClientOfflineSessionMaxLifespan      *int                            `json:"clientOfflineSessionMaxLifespan,omitempty"`
+	Logo                                 *string                         `json:"logo,omitempty"`
+	PolicyURI                            *string                         `json:"policyUri,omitempty"`
+	SAMLASSERTIONSIGNATURE               *bool                           `json:"saml.assertion.signature,omitempty"`
+	SAMLAutodetect                       *bool                           `json:"saml.autodetect,omitempty"`
+	SAMLClientSignature                  *bool                           `json:"saml.client.signature,omitempty"`
+	SAMLEncrypt                          *bool                           `json:"saml.encrypt,omitempty"`
+	SAMLForcePostBinding                 *bool                           `json:"saml.force.post.binding,omitempty"`
+	SAMLMultiValuedRoles                 *bool                           `json:"saml.multivalued.roles,omitempty"`
+	SAMLServerSignature                  *bool                           `json:"saml.server.signature,omitempty"`
+	SAMLSignatureAlgorithm               *string                         `json:"saml.signature.algorithm,omitempty"`
+	TosURI                               *string                         `json:"tosUri,omitempty"`
 }
 
 // ResourceServerRepresentation represents the resources of a Server
@@ -569,6 +594,21 @@ var (
 	CONSENSUS   = DecisionStrategyP("CONSENSUS")
 )
 
+// AbstractPolicyRepresentation is the base representation for all policies
+type AbstractPolicyRepresentation struct {
+	Config           *map[string]string `json:"config,omitempty"`
+	DecisionStrategy *DecisionStrategy  `json:"decisionStrategy,omitempty"`
+	Description      *string            `json:"description,omitempty"`
+	ID               *string            `json:"id,omitempty"`
+	Logic            *Logic             `json:"logic,omitempty"`
+	Name             *string            `json:"name,omitempty"`
+	Owner            *string            `json:"owner,omitempty"`
+	Policies         *[]string          `json:"policies,omitempty"`
+	Resources        *[]string          `json:"resources,omitempty"`
+	Scopes           *[]string          `json:"scopes,omitempty"`
+	Type             *string            `json:"type,omitempty"`
+}
+
 // PolicyRepresentation is a representation of a Policy
 type PolicyRepresentation struct {
 	Config           *map[string]string `json:"config,omitempty"`
@@ -589,6 +629,116 @@ type PolicyRepresentation struct {
 	UserPolicyRepresentation
 	AggregatedPolicyRepresentation
 	GroupPolicyRepresentation
+}
+
+// ToConfig converts embedded policy-specific fields to Config format for Keycloak 26+ compatibility
+func (p *PolicyRepresentation) ToConfig() {
+	if p.Config == nil {
+		p.Config = &map[string]string{}
+	}
+
+	config := *p.Config
+
+	// Convert ClientPolicyRepresentation to Config
+	if p.ClientPolicyRepresentation.Clients != nil && len(*p.ClientPolicyRepresentation.Clients) > 0 {
+		clients := make([]string, len(*p.ClientPolicyRepresentation.Clients))
+		for i, client := range *p.ClientPolicyRepresentation.Clients {
+			clients[i] = fmt.Sprintf(`"%s"`, client)
+		}
+		config["clients"] = fmt.Sprintf("[%s]", strings.Join(clients, ","))
+	}
+
+	// Convert RolePolicyRepresentation to Config
+	if p.RolePolicyRepresentation.Roles != nil && len(*p.RolePolicyRepresentation.Roles) > 0 {
+		roles := make([]string, len(*p.RolePolicyRepresentation.Roles))
+		for i, role := range *p.RolePolicyRepresentation.Roles {
+			if role.ID != nil {
+				roles[i] = fmt.Sprintf(`{"id":"%s","required":%t}`, *role.ID, role.Required != nil && *role.Required)
+			}
+		}
+		config["roles"] = fmt.Sprintf("[%s]", strings.Join(roles, ","))
+	}
+
+	// Convert JSPolicyRepresentation to Config
+	if p.JSPolicyRepresentation.Code != nil {
+		config["code"] = *p.JSPolicyRepresentation.Code
+	}
+
+	// Convert UserPolicyRepresentation to Config
+	if p.UserPolicyRepresentation.Users != nil && len(*p.UserPolicyRepresentation.Users) > 0 {
+		users := make([]string, len(*p.UserPolicyRepresentation.Users))
+		for i, user := range *p.UserPolicyRepresentation.Users {
+			users[i] = fmt.Sprintf(`"%s"`, user)
+		}
+		config["users"] = fmt.Sprintf("[%s]", strings.Join(users, ","))
+	}
+
+	// Convert AggregatedPolicyRepresentation to Config
+	if p.AggregatedPolicyRepresentation.Policies != nil && len(*p.AggregatedPolicyRepresentation.Policies) > 0 {
+		policies := make([]string, len(*p.AggregatedPolicyRepresentation.Policies))
+		for i, policy := range *p.AggregatedPolicyRepresentation.Policies {
+			policies[i] = fmt.Sprintf(`"%s"`, policy)
+		}
+		config["applyPolicies"] = fmt.Sprintf("[%s]", strings.Join(policies, ","))
+	}
+
+	// Convert GroupPolicyRepresentation to Config
+	if p.GroupPolicyRepresentation.Groups != nil && len(*p.GroupPolicyRepresentation.Groups) > 0 {
+		groups := make([]string, len(*p.GroupPolicyRepresentation.Groups))
+		for i, group := range *p.GroupPolicyRepresentation.Groups {
+			if group.ID != nil {
+				required := "false"
+				if group.ExtendChildren != nil && *group.ExtendChildren {
+					required = "true"
+				}
+				groups[i] = fmt.Sprintf(`{"id":"%s","extendChildren":%s}`, *group.ID, required)
+			}
+		}
+		config["groups"] = fmt.Sprintf("[%s]", strings.Join(groups, ","))
+	}
+	if p.GroupPolicyRepresentation.GroupsClaim != nil {
+		config["groupsClaim"] = *p.GroupPolicyRepresentation.GroupsClaim
+	}
+
+	// Convert TimePolicyRepresentation to Config
+	if p.TimePolicyRepresentation.NotBefore != nil {
+		config["nbf"] = *p.TimePolicyRepresentation.NotBefore
+	}
+	if p.TimePolicyRepresentation.NotOnOrAfter != nil {
+		config["noa"] = *p.TimePolicyRepresentation.NotOnOrAfter
+	}
+	if p.TimePolicyRepresentation.DayMonth != nil {
+		config["dayMonth"] = *p.TimePolicyRepresentation.DayMonth
+	}
+	if p.TimePolicyRepresentation.DayMonthEnd != nil {
+		config["dayMonthEnd"] = *p.TimePolicyRepresentation.DayMonthEnd
+	}
+	if p.TimePolicyRepresentation.Month != nil {
+		config["month"] = *p.TimePolicyRepresentation.Month
+	}
+	if p.TimePolicyRepresentation.MonthEnd != nil {
+		config["monthEnd"] = *p.TimePolicyRepresentation.MonthEnd
+	}
+	if p.TimePolicyRepresentation.Year != nil {
+		config["year"] = *p.TimePolicyRepresentation.Year
+	}
+	if p.TimePolicyRepresentation.YearEnd != nil {
+		config["yearEnd"] = *p.TimePolicyRepresentation.YearEnd
+	}
+	if p.TimePolicyRepresentation.Hour != nil {
+		config["hour"] = *p.TimePolicyRepresentation.Hour
+	}
+	if p.TimePolicyRepresentation.HourEnd != nil {
+		config["hourEnd"] = *p.TimePolicyRepresentation.HourEnd
+	}
+	if p.TimePolicyRepresentation.Minute != nil {
+		config["minute"] = *p.TimePolicyRepresentation.Minute
+	}
+	if p.TimePolicyRepresentation.MinuteEnd != nil {
+		config["minuteEnd"] = *p.TimePolicyRepresentation.MinuteEnd
+	}
+
+	p.Config = &config
 }
 
 // RolePolicyRepresentation represents role based policies
@@ -877,6 +1027,7 @@ type AuthenticationFlowRepresentation struct {
 	ID                       *string                                  `json:"id,omitempty"`
 	ProviderID               *string                                  `json:"providerId,omitempty"`
 	TopLevel                 *bool                                    `json:"topLevel,omitempty"`
+	ProvidedBy               *string                                  `json:"providedBy,omitempty"`
 }
 
 // AuthenticationExecutionRepresentation represents the authentication execution of an AuthenticationFlowRepresentation
@@ -1173,6 +1324,8 @@ type IdentityProviderRepresentation struct {
 	ProviderID                *string            `json:"providerId,omitempty"`
 	StoreToken                *bool              `json:"storeToken,omitempty"`
 	TrustEmail                *bool              `json:"trustEmail,omitempty"`
+	UpdateProfileFirstLogin   *bool              `json:"updateProfileFirstLogin,omitempty"`
+	AuthenticateByDefault     *bool              `json:"authenticateByDefault,omitempty"`
 }
 
 // IdentityProviderMapper represents the body of a call to add a mapper to
@@ -1467,8 +1620,8 @@ type OrganizationInviteUserParams struct {
 }
 
 // FormData returns form data for a given OrganizationInviteUserParams
-func (p *OrganizationInviteUserParams) FormData() map[string]string {
-	m, _ := json.Marshal(p)
+func (v *OrganizationInviteUserParams) FormData() map[string]string {
+	m, _ := json.Marshal(v)
 	var res map[string]string
 	_ = json.Unmarshal(m, &res)
 	return res
@@ -1572,6 +1725,7 @@ func (v *ProtocolMappersConfig) String() string                     { return pre
 func (v *Client) String() string                                    { return prettyStringStruct(v) }
 func (v *ResourceServerRepresentation) String() string              { return prettyStringStruct(v) }
 func (v *RoleDefinition) String() string                            { return prettyStringStruct(v) }
+func (v *AbstractPolicyRepresentation) String() string              { return prettyStringStruct(v) }
 func (v *PolicyRepresentation) String() string                      { return prettyStringStruct(v) }
 func (v *RolePolicyRepresentation) String() string                  { return prettyStringStruct(v) }
 func (v *JSPolicyRepresentation) String() string                    { return prettyStringStruct(v) }
